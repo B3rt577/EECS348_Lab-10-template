@@ -1,19 +1,34 @@
-name: Test
+name: Build and Test
+
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main  # Trigger workflow on push to the main branch
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main  # Trigger workflow on pull requests targeting the main branch
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  build_and_test:
+    runs-on: ubuntu-latest  # Run tests on an Ubuntu machine
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Build googletest
+      - name: Checkout code
+        uses: actions/checkout@v4  # Checkout the code from your repository
+
+      - name: Set up CMake and build dependencies
         run: |
-          cmake -S . -B build -DBUILD_GMOCK=OFF
-          cmake --build build
-      - name: Run googletest
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ make  # Install dependencies for CMake, g++, and make
+
+      - name: Build the project with Makefile
         run: |
-          export GTEST_COLOR=1
-          cd build/tests && ctest --output-on-failure
+          make  # Use make to build the project and run the tests
+
+      - name: Run the tests
+        run: |
+          cd build && ./run_tests  # Change to the build directory and run tests
+
+      - name: Clean up the build directory
+        run: |
+          make clean  # Clean up build files after tests (optional)
